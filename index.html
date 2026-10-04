@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教學進度時間表管理系統 - Dark Mode</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;          
+            --card-bg: #161b22;           
+            --card-border: #30363d;       
+            --primary: #58a6ff;           
+            --primary-glow: 0 0 10px rgba(88, 166, 255, 0.4);
+            --text-main: #c9d1d9;         
+            --text-muted: #8b949e;        
+            --danger: #ff7b72;            
+            --danger-bg: rgba(255, 123, 114, 0.1);
+            --warning: #e3b341;           
+            --input-bg: #010409;          
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            padding: 20px; 
+            line-height: 1.6;
+            color-scheme: dark; 
+            background-image: radial-gradient(circle at top, #1f242c 0%, transparent 40%); 
+        }
+        
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        h1 { 
+            text-align: center; margin-bottom: 30px; font-weight: 800;
+            background: linear-gradient(90deg, #58a6ff, #a371f7);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: 2px; text-shadow: 0 0 20px rgba(88, 166, 255, 0.2);
+        }
+        
+        h2 { 
+            font-size: 1.2rem; margin-top: 0; color: #f0f6fc; 
+            border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block;
+            text-shadow: var(--primary-glow);
+        }
+        
+        .card { 
+            background: var(--card-bg); padding: 20px; border-radius: 12px; 
+            border: 1px solid var(--card-border); box-shadow: 0 8px 24px rgba(0,0,0,0.5); 
+            margin-bottom: 25px; transition: transform 0.3s;
+        }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-muted); }
+        
+        input[type="date"], input[type="text"]:not(.day-note) { 
+            width: 100%; padding: 10px; background-color: var(--input-bg); 
+            border: 1px solid var(--card-border); color: var(--text-main);
+            border-radius: 6px; box-sizing: border-box; transition: 0.3s; 
+        }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: var(--primary-glow); }
+        
+        button { 
+            background-color: transparent; color: var(--primary); border: 1px solid var(--primary); 
+            padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: all 0.2s; 
+            font-size: 14px; font-weight: bold; letter-spacing: 1px;
+        }
+        button:hover { background-color: var(--primary); color: #000; box-shadow: var(--primary-glow); }
+        
+        .btn-danger { color: var(--danger); border-color: var(--danger); padding: 4px 10px; font-size: 0.8rem; }
+        .btn-danger:hover { background-color: var(--danger); color: #000; box-shadow: 0 0 10px rgba(255, 123, 114, 0.4); }
+        
+        .btn-edit { color: var(--warning); border-color: var(--warning); padding: 4px 10px; font-size: 0.8rem; margin-right: 5px; }
+        .btn-edit:hover { background-color: var(--warning); color: #000; box-shadow: 0 0 10px rgba(227, 179, 65, 0.4); }
+
+        .btn-cancel { color: var(--text-muted); border-color: var(--text-muted); }
+        .btn-cancel:hover { background-color: var(--text-muted); color: #000; box-shadow: none; }
+        
+        .holiday-tag { display: inline-block; background: rgba(210, 168, 255, 0.1); color: #d2a8ff; padding: 5px 12px; border-radius: 20px; font-size: 13px; margin: 4px; border: 1px solid #d2a8ff; }
+        .holiday-reason-text { color: #f0f6fc; font-weight: bold; margin-left: 4px; }
+        
+        .day-selector { background: rgba(1, 4, 9, 0.5); padding: 15px; border-radius: 6px; border: 1px solid var(--card-border); }
+        .day-row { display: flex; align-items: center; margin-bottom: 10px; }
+        .day-row:last-child { margin-bottom: 0; }
+        .day-row label { width: 85px; margin-bottom: 0; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
+        .day-row input[type="text"] { flex: 1; padding: 6px 10px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 4px; font-size: 0.85rem; color: var(--text-main); }
+        
+        .class-timetable { margin-bottom: 20px; border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden; background: var(--input-bg); box-shadow: 0 5px 15px rgba(0,0,0,0.5);}
+        .class-header { 
+            background: linear-gradient(180deg, #161b22, #0d1117); 
+            padding: 18px; display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid var(--card-border); cursor: pointer; transition: background 0.2s;
+        }
+        .class-header:hover { background: linear-gradient(180deg, #1f2630, #161b22); }
+        .class-header h3 { margin: 0; color: #f0f6fc; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
+        .class-schedule-info { font-size: 0.9rem; color: var(--text-muted); margin-top: 6px; margin-left: 28px; }
+        .expand-icon { color: var(--primary); font-size: 0.9rem; transition: transform 0.3s; width: 16px; display: inline-block; text-align: center; }
+        
+        .stat-badge { background: rgba(88, 166, 255, 0.15); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: inline-block; margin-bottom: 6px; border: 1px solid var(--primary); }
+        .holiday-badge { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); margin-left: 5px; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--card-border); vertical-align: top; }
+        th { background-color: rgba(22, 27, 34, 0.8); font-weight: bold; color: var(--text-muted); width: 35%; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;}
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: rgba(22, 27, 34, 0.5); }
+        .date-cell { font-weight: bold; color: var(--primary); width: 20%; white-space: nowrap; }
+        .date-past { color: #484f58; } 
+        .cell-note { font-size: 0.8rem; color: #a371f7; background: rgba(163, 113, 247, 0.1); padding: 2px 8px; border-radius: 4px; margin-top: 6px; display: inline-block; border: 1px solid rgba(163, 113, 247, 0.3); }
+        
+        .row-holiday { background-color: var(--danger-bg) !important; border-left: 3px solid var(--danger); }
+        .holiday-label { background: var(--danger); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; font-weight: bold; text-transform: uppercase; }
+        
+        .past-divider { cursor: pointer; transition: 0.3s; }
+        .past-divider td {
+            text-align: center; background: rgba(22, 27, 34, 0.4); color: var(--text-muted);
+            font-size: 0.85rem; letter-spacing: 2px; padding: 12px;
+            border-top: 1px dashed var(--card-border); border-bottom: 1px dashed var(--card-border); transition: 0.3s;
+        }
+        .past-divider:hover td { background: rgba(88, 166, 255, 0.1); color: var(--primary); text-shadow: var(--primary-glow); }
+
+        /* ===== 鎖定顯示與編輯區塊樣式 ===== */
+        .content-display {
+            background: rgba(13, 17, 23, 0.6);
+            border: 1px dashed #30363d;
+            border-radius: 4px;
+            padding: 12px;
+            min-height: 24px;
+            white-space: pre-wrap; /* 讓換行符號生效 */
+            color: #e6edf3;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .btn-action {
+            background: transparent; border-radius: 4px; cursor: pointer;
+            font-size: 0.75rem; font-weight: bold; letter-spacing: 1px;
+            padding: 4px 10px; transition: 0.2s;
+        }
+        .btn-edit-cell { color: #e3b341; border: 1px solid #e3b341; }
+        .btn-edit-cell:hover { background: #e3b341; color: #000; box-shadow: 0 0 8px rgba(227, 179, 65, 0.4); }
+        
+        .btn-save-cell { color: #58a6ff; border: 1px solid #58a6ff; }
+        .btn-save-cell:hover { background: #58a6ff; color: #000; box-shadow: 0 0 8px rgba(88, 166, 255, 0.4); }
+
+        .btn-cancel-cell { color: #8b949e; border: 1px solid #8b949e; margin-right: 5px; }
+        .btn-cancel-cell:hover { background: #8b949e; color: #000; }
+
+        .input-seamless { 
+            width: 100%; border: 1px solid var(--primary); 
+            background: var(--input-bg); padding: 10px; 
+            border-radius: 6px; transition: 0.3s; 
+            box-sizing: border-box; color: var(--text-main);
+            font-family: inherit; resize: vertical; min-height: 60px;
+            box-shadow: var(--primary-glow); margin-bottom: 8px;
+        }
+        .input-seamless:focus { outline: none; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            th, td { padding: 10px; }
+            .class-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .class-header-actions { margin-top: 10px; width: 100%; text-align: left !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SYNC// CLASS TRACKER</h1>
+
+        <div class="grid-2">
+            <!-- 設定區 -->
+            <div class="card">
+                <h2>1. 學期與段考區間</h2>
+                <div class="input-group">
+                    <label>紀錄起始日 (學期開始)</label>
+                    <input type="date" id="startDate" onchange="saveConfig()">
+                </div>
+                <div class="input-group">
+                    <label>下次段考日 (紀錄結束)</label>
+                    <input type="date" id="examDate" onchange="saveConfig()">
+                </div>
+                <hr style="border:0; border-top:1px dashed var(--card-border); margin: 20px 0;">
+                <h2>2. 停課/放假日登記</h2>
+                <div class="holiday-inputs" style="display: flex; gap: 10px; margin-bottom: 12px;">
+                    <input type="date" id="holidayInput" style="flex: 1;">
+                    <input type="text" id="holidayReason" placeholder="原因(如:校慶、段考)" style="flex: 1.5;">
+                    <button onclick="addHoliday()">登記</button>
+                </div>
+                <div id="holidayList"></div>
+            </div>
+
+            <!-- 新增/編輯 班級區 -->
+            <div class="card" id="editorCard">
+                <h2>3. 班級設定 / 排課 (CYCLE)</h2>
+                <div class="input-group">
+                    <label>班級名稱 (ID)</label>
+                    <input type="text" id="className" placeholder="例如：101班">
+                </div>
+                <div class="input-group">
+                    <label>選擇上課星期與備註 (可複選)</label>
+                    <div class="day-selector">
+                        <div class="day-row"><label><input type="checkbox" class="day-cb" value="1"> 星期一</label> <input type="text" class="day-note" id="note_1" placeholder="備註 (如: 第3節)"></div>
+                        <div class="day-row"><label><input type="checkbox" class="day-cb" value="2"> 星期二</label> <input type="text" class="day-note" id="note_2" placeholder="備註..."></div>
+                        <div class="day-row"><label><input type="checkbox" class="day-cb" value="3"> 星期三</label> <input type="text" class="day-note" id="note_3" placeholder="備註..."></div>
+                        <div class="day-row"><label><input type="checkbox" class="day-cb" value="4"> 星期四</label> <input type="text" class="day-note" id="note_4" placeholder="備註..."></div>
+                        <div class="day-row"><label><input type="checkbox" class="day-cb" value="5"> 星期五</label> <input type="text" class="day-note" id="note_5" placeholder="備註..."></div>
+                        <div class="day-row"><label><input type="checkbox" class="day-cb" value="6"> 星期六</label> <input type="text" class="day-note" id="note_6" placeholder="備註..."></div>
+                        <div class="day-row"><label><input type="checkbox" class="day-cb" value="0"> 星期日</label> <input type="text" class="day-note" id="note_0" placeholder="備註..."></div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="submitClassBtn" onclick="submitClass()" style="flex: 1; padding: 12px; font-size: 16px;">+ 新增班級 (ADD)</button>
+                    <button id="cancelEditBtn" class="btn-cancel" onclick="cancelEdit()" style="display: none; padding: 12px; font-size: 16px;">取消編輯 (CANCEL)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 班級資料庫 -->
+        <div class="card" style="background: transparent; box-shadow: none; border: none; padding: 0;">
+            <h2 style="margin-left: 5px; font-size: 1.5rem;">📖 班級進度資料庫 (DATABASE)</h2>
+            <div id="timetablesContainer" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+        
+        let config = JSON.parse(localStorage.getItem('tt_config')) || { startDate: '', examDate: '', holidays: [] };
+        let classes = JSON.parse(localStorage.getItem('tt_classes')) || [];
+        let records = JSON.parse(localStorage.getItem('tt_records')) || {}; 
+        
+        let editingClassId = null;
+        let expandedClasses = new Set(); 
+
+        document.getElementById('startDate').value = config.startDate;
+        document.getElementById('examDate').value = config.examDate;
+        renderHolidays();
+        renderTimetables();
+
+        function saveConfig() {
+            config.startDate = document.getElementById('startDate').value;
+            config.examDate = document.getElementById('examDate').value;
+            localStorage.setItem('tt_config', JSON.stringify(config));
+            renderTimetables();
+        }
+
+        function addHoliday() {
+            const date = document.getElementById('holidayInput').value;
+            const reason = document.getElementById('holidayReason').value.trim() || '停課 / 放假';
+            
+            if (date) {
+                const existingIndex = config.holidays.findIndex(h => h.date === date);
+                if (existingIndex >= 0) {
+                    config.holidays[existingIndex].reason = reason;
+                } else {
+                    config.holidays.push({ date: date, reason: reason });
+                }
+                config.holidays.sort((a, b) => a.date.localeCompare(b.date));
+                localStorage.setItem('tt_config', JSON.stringify(config));
+                
+                document.getElementById('holidayInput').value = '';
+                document.getElementById('holidayReason').value = '';
+                
+                renderHolidays();
+                renderTimetables(); 
+            }
+        }
+
+        function removeHoliday(date) {
+            config.holidays = config.holidays.filter(h => h.date !== date);
+            localStorage.setItem('tt_config', JSON.stringify(config));
+            renderHolidays();
+            renderTimetables();
+        }
+
+        function renderHolidays() {
+            const container = document.getElementById('holidayList');
+            container.innerHTML = '';
+            config.holidays.forEach(h => {
+                container.innerHTML += `
+                    <span class="holiday-tag">
+                        ${h.date} <span class="holiday-reason-text">(${h.reason})</span>
+                        <span style="cursor:pointer; color:var(--danger); font-weight:bold; margin-left:6px;" onclick="removeHoliday('${h.date}')">×</span>
+                    </span>`;
+            });
+        }
+
+        function submitClass() {
+            const name = document.getElementById('className').value;
+            const schedule = [];
+            
+            document.querySelectorAll('.day-cb').forEach(cb => {
+                if (cb.checked) {
+                    const dayVal = parseInt(cb.value);
+                    const note = document.getElementById('note_' + dayVal).value;
+                    schedule.push({ day: dayVal, note: note });
+                }
+            });
+
+            if (name && schedule.length > 0) {
+                if (editingClassId) {
+                    const clsIndex = classes.findIndex(c => c.id === editingClassId);
+                    if (clsIndex > -1) {
+                        classes[clsIndex].name = name;
+                        classes[clsIndex].schedule = schedule;
+                    }
+                    expandedClasses.add(editingClassId); 
+                    cancelEdit(); 
+                } else {
+                    const newId = Date.now().toString();
+                    classes.push({
+                        id: newId,
+                        name: name,
+                        schedule: schedule
+                    });
+                    expandedClasses.add(newId); 
+                    
+                    document.getElementById('className').value = '';
+                    document.querySelectorAll('.day-cb').forEach(cb => cb.checked = false);
+                    document.querySelectorAll('.day-note').forEach(input => input.value = '');
+                }
+                localStorage.setItem('tt_classes', JSON.stringify(classes));
+                renderTimetables();
+            } else {
+                alert('系統提示：請輸入班級名稱，並至少勾選一天上課日。');
+            }
+        }
+
+        function editClass(id) {
+            const cls = classes.find(c => c.id === id);
+            if (!cls) return;
+            
+            editingClassId = id;
+            document.getElementById('className').value = cls.name;
+            
+            document.querySelectorAll('.day-cb').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.day-note').forEach(input => input.value = '');
+            
+            cls.schedule.forEach(s => {
+                const cb = document.querySelector(`.day-cb[value="${s.day}"]`);
+                if (cb) cb.checked = true;
+                const noteInput = document.getElementById(`note_${s.day}`);
+                if (noteInput) noteInput.value = s.note || '';
+            });
+            
+            const submitBtn = document.getElementById('submitClassBtn');
+            submitBtn.innerText = '儲存修改 (UPDATE)';
+            submitBtn.style.backgroundColor = 'var(--warning)';
+            submitBtn.style.color = '#000';
+            submitBtn.style.borderColor = 'var(--warning)';
+            submitBtn.style.boxShadow = '0 0 10px rgba(227, 179, 65, 0.4)';
+            
+            document.getElementById('cancelEditBtn').style.display = 'inline-block';
+            document.getElementById('editorCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function cancelEdit() {
+            editingClassId = null;
+            document.getElementById('className').value = '';
+            document.querySelectorAll('.day-cb').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.day-note').forEach(input => input.value = '');
+            
+            const submitBtn = document.getElementById('submitClassBtn');
+            submitBtn.innerText = '+ 新增班級 (ADD)';
+            submitBtn.style.backgroundColor = 'transparent';
+            submitBtn.style.color = 'var(--primary)';
+            submitBtn.style.borderColor = 'var(--primary)';
+            submitBtn.style.boxShadow = 'none';
+            
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        }
+
+        function removeClass(id) {
+            if(confirm('警告：確定要刪除此班級與所有的進度紀錄嗎？資料將無法還原。')) {
+                classes = classes.filter(c => c.id !== id);
+                localStorage.setItem('tt_classes', JSON.stringify(classes));
+                expandedClasses.delete(id);
+                if (editingClassId === id) cancelEdit();
+                renderTimetables();
+            }
+        }
+
+        function toggleClassTimetable(id, event) {
+            if (event && (event.target.tagName === 'BUTTON' || event.target.closest('button'))) return;
+            
+            const tableWrapper = document.getElementById(`table-wrapper-${id}`);
+            const icon = document.getElementById(`expand-icon-${id}`);
+            
+            if (tableWrapper.style.display === 'none') {
+                tableWrapper.style.display = 'block';
+                icon.innerText = '▼';
+                icon.style.textShadow = 'var(--primary-glow)';
+                expandedClasses.add(id);
+            } else {
+                tableWrapper.style.display = 'none';
+                icon.innerText = '▶';
+                icon.style.textShadow = 'none';
+                expandedClasses.delete(id);
+            }
+        }
+
+        function togglePastRecords(id) {
+            const pastBody = document.getElementById(`past-records-${id}`);
+            const icon = document.getElementById(`past-icon-${id}`);
+            
+            if (pastBody.style.display === 'none') {
+                pastBody.style.display = ''; 
+                icon.innerText = '▼';
+                icon.style.textShadow = 'var(--primary-glow)';
+            } else {
+                pastBody.style.display = 'none';
+                icon.innerText = '▶';
+                icon.style.textShadow = 'none';
+            }
+        }
+
+        // --- 以下為單個儲存格的 檢視/編輯 控制邏輯 ---
+        function updateRecord(classId, dateStr, field, value) {
+            const key = `${classId}_${dateStr}`;
+            if (!records[key]) records[key] = { expected: '', actual: '' };
+            records[key][field] = value;
+            localStorage.setItem('tt_records', JSON.stringify(records));
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag] || tag));
+        }
+
+        function enterEditMode(cId, dStr, field) {
+            const key = `${cId}_${dStr}`;
+            document.getElementById(`view_${key}_${field}`).style.display = 'none';
+            document.getElementById(`edit_${key}_${field}`).style.display = 'block';
+            document.getElementById(`input_${key}_${field}`).focus();
+        }
+
+        function cancelEditMode(cId, dStr, field) {
+            const key = `${cId}_${dStr}`;
+            const record = records[key] || { expected: '', actual: '' };
+            document.getElementById(`input_${key}_${field}`).value = record[field] || '';
+            document.getElementById(`edit_${key}_${field}`).style.display = 'none';
+            document.getElementById(`view_${key}_${field}`).style.display = 'block';
+        }
+
+        function saveRecordMode(cId, dStr, field) {
+            const key = `${cId}_${dStr}`;
+            const val = document.getElementById(`input_${key}_${field}`).value;
+            
+            // 儲存資料
+            updateRecord(cId, dStr, field, val);
+            
+            // 局部更新 DOM 顯示，避免整頁刷新干擾使用者體驗
+            const displayDiv = document.getElementById(`view_${key}_${field}`).querySelector('.content-display');
+            if (val.trim() === '') {
+                displayDiv.innerHTML = '<span style="color:var(--text-muted);">[ EMPTY ]</span>';
+            } else {
+                displayDiv.innerHTML = escapeHTML(val);
+            }
+            
+            // 切換回預覽模式
+            document.getElementById(`edit_${key}_${field}`).style.display = 'none';
+            document.getElementById(`view_${key}_${field}`).style.display = 'block';
+        }
+
+        // 產生儲存格 HTML
+        function getCellHTML(cId, cd, field, placeholder) {
+            const key = `${cId}_${cd.dateStr}`;
+            const record = records[key] || { expected: '', actual: '' };
+            const val = record[field] || '';
+            const displayHtml = val.trim() ? escapeHTML(val) : '<span style="color:var(--text-muted);">[ EMPTY ]</span>';
+            
+            return `
+                <div id="view_${key}_${field}">
+                    <div class="content-display">${displayHtml}</div>
+                    <div style="text-align: right;">
+                        <button class="btn-action btn-edit-cell" onclick="enterEditMode('${cId}', '${cd.dateStr}', '${field}')">✏️ EDIT</button>
+                    </div>
+                </div>
+                <div id="edit_${key}_${field}" style="display:none;">
+                    <textarea id="input_${key}_${field}" class="input-seamless" placeholder="${placeholder}">${val}</textarea>
+                    <div style="text-align: right;">
+                        <button class="btn-action btn-cancel-cell" onclick="cancelEditMode('${cId}', '${cd.dateStr}', '${field}')">CANCEL</button>
+                        <button class="btn-action btn-save-cell" onclick="saveRecordMode('${cId}', '${cd.dateStr}', '${field}')">💾 SAVE</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- 產生課表 HTML 邏輯 ---
+        function getValidClassDates(schedule) {
+            if (!config.startDate || !config.examDate) return [];
+            let start = new Date(config.startDate);
+            let end = new Date(config.examDate);
+            let dates = [];
+            if (start > end) return [];
+
+            let current = new Date(start);
+            while (current <= end) {
+                let currentDay = current.getDay();
+                let schedItem = schedule.find(s => s.day === currentDay);
+                
+                if (schedItem) {
+                    const dateStr = current.getFullYear() + '-' + String(current.getMonth()+1).padStart(2, '0') + '-' + String(current.getDate()).padStart(2, '0');
+                    const holidayObj = config.holidays.find(h => h.date === dateStr);
+                    const isHoliday = !!holidayObj;
+                    
+                    dates.push({
+                        dateStr: dateStr,
+                        day: currentDay,
+                        note: schedItem.note,
+                        isHoliday: isHoliday,
+                        holidayReason: isHoliday ? holidayObj.reason : ''
+                    });
+                }
+                current.setDate(current.getDate() + 1);
+            }
+            return dates;
+        }
+
+        function generateRowHTML(cd, c, todayStr) {
+            const isPast = cd.dateStr < todayStr;
+            const displayDate = cd.dateStr.substring(5).replace('-','/') + ` (星期${dayNames[cd.day]})`; 
+            const noteTag = cd.note ? `<br><span class="cell-note">${cd.note}</span>` : '';
+
+            if (cd.isHoliday) {
+                return `
+                    <tr class="row-holiday">
+                        <td class="date-cell ${isPast ? 'date-past' : ''}">
+                            <del>${displayDate}</del>
+                            <span class="holiday-label">OFF</span>
+                            ${noteTag}
+                        </td>
+                        <td colspan="2" style="text-align: center; color: var(--danger); font-weight: bold; vertical-align: middle; letter-spacing: 2px;">
+                            [ ${cd.holidayReason} ]
+                        </td>
+                    </tr>
+                `;
+            } else {
+                const dateClass = isPast ? 'date-cell date-past' : 'date-cell';
+                return `
+                    <tr>
+                        <td class="${dateClass}">
+                            ${displayDate} 
+                            ${cd.dateStr === todayStr ? '<span style="color:var(--primary); font-size:11px; margin-left:6px; text-shadow:var(--primary-glow); border: 1px solid var(--primary); padding:1px 4px; border-radius:3px;">TODAY</span>' : ''}
+                            ${noteTag}
+                        </td>
+                        <td>${getCellHTML(c.id, cd, 'actual', '輸入實際完成進度...')}</td>
+                        <td>${getCellHTML(c.id, cd, 'expected', '輸入預期課程進度...')}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        function renderTimetables() {
+            const container = document.getElementById('timetablesContainer');
+            container.innerHTML = '';
+
+            if (!config.startDate || !config.examDate) {
+                container.innerHTML = '<div class="card" style="border:1px dashed var(--danger);"><p style="color: var(--danger); text-align:center; font-weight:bold;">[!] 系統未就緒：請先設定「紀錄起始日」與「下次段考日」</p></div>';
+                return;
+            }
+
+            if (classes.length === 0) {
+                container.innerHTML = '<div class="card"><p style="text-align:center; color:var(--text-muted);">[ 資料庫為空 ] 尚未登錄任何班級</p></div>';
+                return;
+            }
+
+            const today = new Date();
+            const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+            classes.forEach(c => {
+                const classDates = getValidClassDates(c.schedule);
+                const remainingClasses = classDates.filter(cd => cd.dateStr >= todayStr && !cd.isHoliday).length;
+                const holidayCount = classDates.filter(cd => cd.isHoliday).length;
+                const scheduleSummary = c.schedule.map(s => `星期${dayNames[s.day]}${s.note ? ' [' + s.note + ']' : ''}`).join('、');
+                
+                const isExpanded = expandedClasses.has(c.id);
+
+                let tableHTML = `
+                    <div class="class-timetable">
+                        <div class="class-header" onclick="toggleClassTimetable('${c.id}', event)">
+                            <div>
+                                <h3><span id="expand-icon-${c.id}" class="expand-icon">${isExpanded ? '▼' : '▶'}</span> ${c.name}</h3>
+                                <div class="class-schedule-info">CYCLE: ${scheduleSummary}</div>
+                            </div>
+                            <div class="class-header-actions" style="text-align: right;">
+                                <div>
+                                    <span class="stat-badge">REMAINING: ${remainingClasses} 節</span>
+                                    <span class="stat-badge holiday-badge">SKIPPED: ${holidayCount} 節</span>
+                                </div>
+                                <div style="margin-top: 8px;">
+                                    <button class="btn-edit" onclick="editClass('${c.id}')">EDIT</button>
+                                    <button class="btn-danger" onclick="removeClass('${c.id}')">DELETE</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="table-wrapper-${c.id}" style="display: ${isExpanded ? 'block' : 'none'};">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="date-cell">DATE / 日期</th>
+                                        <th>✅ ACTUAL / 實際完成進度</th>
+                                        <th>🎯 TARGET / 預期課程進度</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+
+                if(classDates.length === 0) {
+                    tableHTML += `<tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:30px;">[ NO DATA ] 此區間內沒有排定課程</td></tr></tbody>`;
+                } else {
+                    const upcomingDates = classDates.filter(cd => cd.dateStr >= todayStr);
+                    const pastDates = classDates.filter(cd => cd.dateStr < todayStr);
+
+                    // 1. 未來與今日
+                    if (upcomingDates.length > 0) {
+                        upcomingDates.forEach(cd => {
+                            tableHTML += generateRowHTML(cd, c, todayStr);
+                        });
+                    } else {
+                        tableHTML += `<tr><td colspan="3" style="text-align:center; color:var(--warning); padding:20px; font-weight:bold; letter-spacing: 1px;">[ ALL CLEARED ] 此區間內已無未來課程</td></tr>`;
+                    }
+                    tableHTML += `</tbody>`;
+
+                    // 2. 歷史紀錄
+                    if (pastDates.length > 0) {
+                        tableHTML += `
+                            <tbody>
+                                <tr class="past-divider" onclick="togglePastRecords('${c.id}')">
+                                    <td colspan="3">
+                                        <span id="past-icon-${c.id}" class="expand-icon" style="text-shadow: none;">▶</span> 
+                                        歷史紀錄 (PAST RECORDS) 
+                                        <span style="font-size: 0.75rem; color: var(--text-muted);">[ ${pastDates.length} 筆 ]</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tbody id="past-records-${c.id}" style="display: none;">
+                        `;
+                        pastDates.reverse().forEach(cd => {
+                            tableHTML += generateRowHTML(cd, c, todayStr);
+                        });
+                        tableHTML += `</tbody>`;
+                    }
+                }
+
+                tableHTML += `</table></div></div>`;
+                container.innerHTML += tableHTML;
+            });
+        }
+    </script>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3ppRnqqsDAr6GrbGb1dogyAYFKRDtEQY",
+    authDomain: "class-progress-tracker-1afd6.firebaseapp.com",
+    projectId: "class-progress-tracker-1afd6",
+    storageBucket: "class-progress-tracker-1afd6.firebasestorage.app",
+    messagingSenderId: "814213770967",
+    appId: "1:814213770967:web:efea063b543db888de8a92"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+</script>
+</body>
+</html>

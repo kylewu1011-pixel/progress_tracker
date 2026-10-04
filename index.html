@@ -1,0 +1,174 @@
+html
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教學進度時間表管理系統 - Dark Mode</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;          
+            --card-bg: #161b22;           
+            --card-border: #30363d;       
+            --primary: #58a6ff;           
+            --primary-glow: 0 0 10px rgba(88, 166, 255, 0.4);
+            --text-main: #c9d1d9;         
+            --text-muted: #8b949e;        
+            --danger: #ff7b72;            
+            --danger-bg: rgba(255, 123, 114, 0.1);
+            --warning: #e3b341;           
+            --input-bg: #010409;          
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            padding: 20px; 
+            line-height: 1.6;
+            color-scheme: dark; 
+            background-image: radial-gradient(circle at top, #1f242c 0%, transparent 40%); 
+        }
+        
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        h1 { 
+            text-align: center; margin-bottom: 30px; font-weight: 800;
+            background: linear-gradient(90deg, #58a6ff, #a371f7);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: 2px; text-shadow: 0 0 20px rgba(88, 166, 255, 0.2);
+        }
+        
+        h2 { 
+            font-size: 1.2rem; margin-top: 0; color: #f0f6fc; 
+            border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block;
+            text-shadow: var(--primary-glow);
+        }
+        
+        .card { 
+            background: var(--card-bg); padding: 20px; border-radius: 12px; 
+            border: 1px solid var(--card-border); box-shadow: 0 8px 24px rgba(0,0,0,0.5); 
+            margin-bottom: 25px; transition: transform 0.3s;
+        }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-muted); }
+        
+        input[type="date"], input[type="text"]:not(.day-note) { 
+            width: 100%; padding: 10px; background-color: var(--input-bg); 
+            border: 1px solid var(--card-border); color: var(--text-main);
+            border-radius: 6px; box-sizing: border-box; transition: 0.3s; 
+        }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: var(--primary-glow); }
+        
+        button { 
+            background-color: transparent; color: var(--primary); border: 1px solid var(--primary); 
+            padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: all 0.2s; 
+            font-size: 14px; font-weight: bold; letter-spacing: 1px;
+        }
+        button:hover { background-color: var(--primary); color: #000; box-shadow: var(--primary-glow); }
+        
+        .btn-danger { color: var(--danger); border-color: var(--danger); padding: 4px 10px; font-size: 0.8rem; }
+        .btn-danger:hover { background-color: var(--danger); color: #000; box-shadow: 0 0 10px rgba(255, 123, 114, 0.4); }
+        
+        .btn-edit { color: var(--warning); border-color: var(--warning); padding: 4px 10px; font-size: 0.8rem; margin-right: 5px; }
+        .btn-edit:hover { background-color: var(--warning); color: #000; box-shadow: 0 0 10px rgba(227, 179, 65, 0.4); }
+
+        .btn-cancel { color: var(--text-muted); border-color: var(--text-muted); }
+        .btn-cancel:hover { background-color: var(--text-muted); color: #000; box-shadow: none; }
+        
+        .holiday-tag { display: inline-block; background: rgba(210, 168, 255, 0.1); color: #d2a8ff; padding: 5px 12px; border-radius: 20px; font-size: 13px; margin: 4px; border: 1px solid #d2a8ff; }
+        .holiday-reason-text { color: #f0f6fc; font-weight: bold; margin-left: 4px; }
+        
+        .day-selector { background: rgba(1, 4, 9, 0.5); padding: 15px; border-radius: 6px; border: 1px solid var(--card-border); }
+        .day-row { display: flex; align-items: center; margin-bottom: 10px; }
+        .day-row:last-child { margin-bottom: 0; }
+        .day-row label { width: 85px; margin-bottom: 0; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
+        .day-row input[type="text"] { flex: 1; padding: 6px 10px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 4px; font-size: 0.85rem; color: var(--text-main); }
+        
+        .class-timetable { margin-bottom: 20px; border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden; background: var(--input-bg); box-shadow: 0 5px 15px rgba(0,0,0,0.5);}
+        .class-header { 
+            background: linear-gradient(180deg, #161b22, #0d1117); 
+            padding: 18px; display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid var(--card-border); cursor: pointer; transition: background 0.2s;
+        }
+        .class-header:hover { background: linear-gradient(180deg, #1f2630, #161b22); }
+        .class-header h3 { margin: 0; color: #f0f6fc; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
+        .class-schedule-info { font-size: 0.9rem; color: var(--text-muted); margin-top: 6px; margin-left: 28px; }
+        .expand-icon { color: var(--primary); font-size: 0.9rem; transition: transform 0.3s; width: 16px; display: inline-block; text-align: center; }
+        
+        .stat-badge { background: rgba(88, 166, 255, 0.15); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: inline-block; margin-bottom: 6px; border: 1px solid var(--primary); }
+        .holiday-badge { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); margin-left: 5px; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--card-border); vertical-align: top; }
+        th { background-color: rgba(22, 27, 34, 0.8); font-weight: bold; color: var(--text-muted); width: 35%; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;}
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: rgba(22, 27, 34, 0.5); }
+        .date-cell { font-weight: bold; color: var(--primary); width: 20%; white-space: nowrap; }
+        .date-past { color: #484f58; } 
+        .cell-note { font-size: 0.8rem; color: #a371f7; background: rgba(163, 113, 247, 0.1); padding: 2px 8px; border-radius: 4px; margin-top: 6px; display: inline-block; border: 1px solid rgba(163, 113, 247, 0.3); }
+        
+        .row-holiday { background-color: var(--danger-bg) !important; border-left: 3px solid var(--danger); }
+        .holiday-label { background: var(--danger); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; font-weight: bold; text-transform: uppercase; }
+        
+        .past-divider { cursor: pointer; transition: 0.3s; }
+        .past-divider td {
+            text-align: center; background: rgba(22, 27, 34, 0.4); color: var(--text-muted);
+            font-size: 0.85rem; letter-spacing: 2px; padding: 12px;
+            border-top: 1px dashed var(--card-border); border-bottom: 1px dashed var(--card-border); transition: 0.3s;
+        }
+        .past-divider:hover td { background: rgba(88, 166, 255, 0.1); color: var(--primary); text-shadow: var(--primary-glow); }
+
+        /* ===== 鎖定顯示與編輯區塊樣式 ===== */
+        .content-display {
+            background: rgba(13, 17, 23, 0.6);
+            border: 1px dashed #30363d;
+            border-radius: 4px;
+            padding: 12px;
+            min-height: 24px;
+            white-space: pre-wrap; /* 讓換行符號生效 */
+            color: #e6edf3;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .btn-action {
+            background: transparent; border-radius: 4px; cursor: pointer;
+            font-size: 0.75rem; font-weight: bold; letter-spacing: 1px;
+            padding: 4px 10px; transition: 0.2s;
+        }
+        .btn-edit-cell { color: #e3b341; border: 1px solid #e3b341; }
+        .btn-edit-cell:hover { background: #e3b341; color: #000; box-shadow: 0 0 8px rgba(227, 179, 65, 0.4); }
+        
+        .btn-save-cell { color: #58a6ff; border: 1px solid #58a6ff; }
+        .btn-save-cell:hover { background: #58a6ff; color: #000; box-shadow: 0 0 8px rgba(88, 166, 255, 0.4); }
+
+        .btn-cancel-cell { color: #8b949e; border: 1px solid #8b949e; margin-right: 5px; }
+        .btn-cancel-cell:hover { background: #8b949e; color: #000; }
+
+        .input-seamless { 
+            width: 100%; border: 1px solid var(--primary); 
+            background: var(--input-bg); padding: 10px; 
+            border-radius: 6px; transition: 0.3s; 
+            box-sizing: border-box; color: var(--text-main);
+            font-family: inherit; resize: vertical; min-height: 60px;
+            box-shadow: var(--primary-glow); margin-bottom: 8px;
+        }
+        .input-seamless:focus { outline: none; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            th, td { padding: 10px; }
+            .class-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .class-header-actions { margin-top: 10px; width: 100%; text-align: left !important; }
+        }
+    </style>
+</head>
